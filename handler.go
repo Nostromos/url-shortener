@@ -1,10 +1,16 @@
 package urlshort
 
 import (
-	"fmt"
+	// "fmt"
 	"net/http"
+
 	yaml "github.com/go-yaml/yaml"
 )
+
+type pathURL struct {
+	Path string `yaml:"path"`
+	URL  string `yaml:"url"`
+}
 
 // MapHandler will return an http.HandlerFunc (which also
 // implements http.Handler) that will attempt to map any
@@ -40,6 +46,36 @@ func MapHandler(pathsToUrls map[string]string, fallback http.Handler) http.Handl
 // See MapHandler to create a similar http.HandlerFunc via
 // a mapping of paths to urls.
 func YAMLHandler(yml []byte, fallback http.Handler) (http.HandlerFunc, error) {
-	// TODO: Implement this...
-	return nil, nil
+	parsedYaml, err := parseYAML(yml)
+	if err != nil {
+		return nil, err
+	}
+
+	pathMap := buildMap(parsedYaml)
+	return MapHandler(pathMap, fallback), nil
+}
+
+// parseYAML takes raw YAML input as a byte slice and returns a
+// slice of pathURL structs and an error if the YAML is invalid.
+func parseYAML(rawYaml []byte) ([]pathURL, error) {
+	var pathURLs []pathURL
+
+	err := yaml.Unmarshal(rawYaml, &pathURLs)
+
+	if err != nil {
+		return nil, err
+	}
+	return pathURLs, nil
+}
+
+// buildMap takes a slice of pathURL structs and returns a map where the keys
+// are the paths and the values are the corresponding URLs.
+func buildMap(pathURLs []pathURL) map[string]string {
+	pathsToUrls := make(map[string]string)
+
+	for _, p := range pathURLs {
+		pathsToUrls[p.Path] = p.URL
+	}
+
+	return pathsToUrls
 }
