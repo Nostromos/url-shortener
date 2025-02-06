@@ -3,7 +3,7 @@
 ## Exercise 2: URL Shortener
 
 ### Initial Thoughts
-**Total Time**: 3 hours 21 mins
+**Total Time**: 3 hours 42 mins
 
 Dealing with libararies and types is still tricky but easier as I learn more about standard libraries and how they work. I started thinking that structs were just types, describing the shape and type of data... I happened upon this interesting (for me) structure:
 
