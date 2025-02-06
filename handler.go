@@ -3,6 +3,7 @@ package urlshort
 import (
 	"fmt"
 	"net/http"
+	yaml "github.com/go-yaml/yaml"
 )
 
 // MapHandler will return an http.HandlerFunc (which also
