@@ -3,18 +3,20 @@ package main
 import (
 	"flag"
 	"fmt"
-	"os"
 	"net/http"
+	"os"
+	"path"
 
 	"github.com/Nostromos/url-shortener"
 )
 
 const (
-	defaultURLs = "urls.yaml"
+	defaultYAMLPath = "urls.yaml"
+	defaultJSONPath = "urls.json"
 )
 
 func main() {
-	yamlPath := flag.String("yaml", defaultURLs, "Path to YAML file to use for shortening")
+	defaultPath := flag.String("p", defaultJSONPath, "Path to file to use for shortening")
 	flag.Parse()
 
 	mux := defaultMux()
@@ -28,20 +30,37 @@ func main() {
 
 	// Read YAML data from path and
 	// convert to bytesliceable data
-	yamlData, err := os.ReadFile(*yamlPath)
+	urlData, err := os.ReadFile(*defaultPath)
 	if err != nil {
 		panic(err)
 	}
 
-	// Build the YAMLHandler using the mapHandler as the
-	// fallback
-	yamlHandler, err := urlshort.YAMLHandler([]byte(yamlData), mapHandler)
-	if err != nil {
-		panic(err)
+	filetype := path.Ext(*defaultPath)
+
+	if filetype == ".yaml" {
+		// Build the YAMLHandler using the mapHandler as the
+		// fallback
+		yamlHandler, err := urlshort.YAMLHandler([]byte(urlData), mapHandler)
+		if err != nil {
+			panic(err)
+		}
+		fmt.Println("YAML: Starting the server on :8080")
+		http.ListenAndServe(":8080", yamlHandler)
+	} else if filetype == ".json" {
+		// Build the JSONHandler using the mapHandler as the
+		// fallback
+		jsonHandler, err := urlshort.JSONHandler([]byte(urlData), mapHandler)
+		if err != nil {
+			panic(err)
+		}
+		fmt.Println("JSON: Starting the server on :8080")
+		http.ListenAndServe(":8080", jsonHandler)
+	} else {
+		fmt.Println("Mux: Starting the server on :8080")
+		http.ListenAndServe(":8080", mapHandler)
 	}
+
 	fmt.Println("Starting the server on :8080")
-	// http.ListenAndServe(":8080", mapHandler)
-	http.ListenAndServe(":8080", yamlHandler)
 }
 
 func defaultMux() *http.ServeMux {
